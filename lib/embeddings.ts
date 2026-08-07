@@ -1,10 +1,36 @@
 import { createClient } from "@/lib/supabase/server";
+import { logLLMCost } from "@/lib/llm/logger";
 import {
   SimilaritySearchResult,
   StoreEmbeddingParams,
 } from "@/types/embeddings";
 
 const EMBEDDING_DIMENSION = 1536;
+const EMBEDDING_MODEL = "text-embedding-3-small";
+
+export interface GenerateEmbeddingOptions {
+  /** When provided, the call is logged to cost_logs like any other LLM
+   * spend (Prompt 1's cost ledger) — previously this called OpenAI
+   * directly and was invisible to cost_logs entirely, even though it runs
+   * on every tutor chat message via lib/tutor/qaCache.ts. */
+  userId?: string;
+  feature?: string;
+}
+
+async function logEmbeddingCost(tokensIn: number, options: GenerateEmbeddingOptions) {
+  if (!options.userId) return;
+  try {
+    await logLLMCost({
+      userId: options.userId,
+      feature: options.feature || "embeddings",
+      model: EMBEDDING_MODEL,
+      tokensIn,
+      tokensOut: 0,
+    });
+  } catch (err) {
+    console.warn("[lib/embeddings] Failed to log embedding cost:", err);
+  }
+}
 
 /**
  * Generate a 1536-dimensional vector embedding for the given input text.
@@ -12,7 +38,10 @@ const EMBEDDING_DIMENSION = 1536;
  * In development environments without an API key, falls back to generating a
  * normalized 1536-element vector derived deterministically from the text.
  */
-export async function generateEmbedding(text: string): Promise<number[]> {
+export async function generateEmbedding(
+  text: string,
+  options: GenerateEmbeddingOptions = {},
+): Promise<number[]> {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey && process.env.NODE_ENV !== "development") {
@@ -30,7 +59,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: "text-embedding-3-small",
+          model: EMBEDDING_MODEL,
           input: text,
         }),
       });
@@ -54,6 +83,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
         );
       }
 
+      const tokensIn = Number(json?.usage?.prompt_tokens) || Math.ceil(text.length / 4);
+      await logEmbeddingCost(tokensIn, options);
+
       return embedding as number[];
     } catch (err) {
       console.warn("Failed to generate embedding via OpenAI API:", err);
@@ -67,6 +99,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   console.warn(
     "[lib/embeddings] OPENAI_API_KEY not configured. Generating deterministic fallback embedding for development.",
   );
+  await logEmbeddingCost(Math.ceil(text.length / 4), options);
 
   return generateMockNormalizedVector(text, EMBEDDING_DIMENSION);
 }

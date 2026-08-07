@@ -52,6 +52,8 @@ export async function checkUsageCap(
     return {
       allowed: true,
       tier,
+      currentUsage,
+      limit,
     };
   } catch (err) {
     console.error(
@@ -62,6 +64,8 @@ export async function checkUsageCap(
     return {
       allowed: true,
       tier: "free",
+      currentUsage: 0,
+      limit: Infinity,
     };
   }
 }

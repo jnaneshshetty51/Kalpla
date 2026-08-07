@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    name: typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test:coverage
+
+      # Build needs these defined (some routes/pages reference them at
+      # build time) but not necessarily pointed at a real project — set
+      # NEXT_PUBLIC_SUPABASE_URL/ANON_KEY and SUPABASE_SERVICE_ROLE_KEY as
+      # real repo secrets (Settings > Secrets and variables > Actions) if
+      # the build ever needs genuine connectivity; until then these
+      # placeholders keep the build from failing on missing env vars alone.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key' }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kalpla.app' }}
+
+  # e2e tests are deliberately NOT run here: they create and delete real
+  # rows against a real Supabase project (see e2e/*.spec.ts), which is only
+  # safe against a dedicated test/staging project, not production. Wire up
+  # a separate workflow (or a job gated on real staging secrets) once one
+  # exists, rather than risk pointing this at production by accident.

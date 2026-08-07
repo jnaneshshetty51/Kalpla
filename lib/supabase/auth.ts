@@ -81,3 +81,42 @@ export async function signOut() {
   const supabase = createBrowserClient();
   return await supabase.auth.signOut();
 }
+
+export interface RequestPasswordResetParams {
+  email: string;
+}
+
+/**
+ * Sends a password-reset email. Confirmed live: unlike signup confirmation
+ * and Google OAuth (both PKCE, ?code=... on the query string), Supabase's
+ * recovery links carry the session as a #access_token=...&type=recovery
+ * URL hash fragment — fragments are never sent to the server at all, so
+ * routing this through the server-side /auth/callback route (which only
+ * reads searchParams) can never work. redirectTo instead points straight
+ * at /reset-password, whose client-side Supabase browser client
+ * auto-detects the hash on load (detectSessionInUrl defaults to true) and
+ * establishes the recovery session itself — no server involvement.
+ */
+export async function requestPasswordReset({ email }: RequestPasswordResetParams) {
+  const supabase = createBrowserClient();
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+  return await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/reset-password`,
+  });
+}
+
+export interface UpdatePasswordParams {
+  password: string;
+}
+
+/**
+ * Sets a new password for the currently-authenticated user — used both by
+ * the post-reset-email flow (a fresh recovery session established via
+ * /auth/callback) and could be reused later for a "change password"
+ * settings action.
+ */
+export async function updatePassword({ password }: UpdatePasswordParams) {
+  const supabase = createBrowserClient();
+  return await supabase.auth.updateUser({ password });
+}

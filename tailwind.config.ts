@@ -23,6 +23,42 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        
+        // Observatory Telemetry Color Palette
+        observatory: {
+          base: "#090D16",
+          panel: "#0E1626",
+          border: "#1E293B",
+          hover: "#142036",
+        },
+        telemetry: {
+          cyan: "#00F0FF",
+          "cyan-dim": "#00B4C0",
+          "cyan-glow": "rgba(0, 240, 255, 0.25)",
+        },
+        precision: {
+          emerald: "#10B981",
+          "emerald-dim": "#059669",
+        },
+        calibrated: {
+          amber: "#F59E0B",
+          "amber-dim": "#D97706",
+        },
+        vulnerability: {
+          crimson: "#EF4444",
+          "crimson-dim": "#DC2626",
+        },
+        steel: {
+          50: "#F8FAFC",
+          100: "#F1F5F9",
+          300: "#CBD5E1",
+          400: "#94A3B8",
+          500: "#64748B",
+          700: "#334155",
+          800: "#1E293B",
+          900: "#0F172A",
+        },
+
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -91,6 +127,9 @@ const config: Config = {
       },
       boxShadow: {
         card: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "telemetry-cyan": "0 0 15px rgba(0, 240, 255, 0.25)",
+        "telemetry-emerald": "0 0 15px rgba(16, 185, 129, 0.25)",
+        "telemetry-amber": "0 0 15px rgba(245, 158, 11, 0.25)",
       },
     },
   },

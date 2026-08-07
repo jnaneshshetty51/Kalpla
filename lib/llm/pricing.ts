@@ -31,6 +31,12 @@ export const MODEL_PRICING: Record<string, ModelPriceRates> = {
     inputPerMillionUsd: 2.5,
     outputPerMillionUsd: 10.0,
   },
+
+  // OpenAI Embeddings — input-only, no completion tokens.
+  "text-embedding-3-small": {
+    inputPerMillionUsd: 0.02,
+    outputPerMillionUsd: 0,
+  },
 };
 
 // Fallback pricing rate used if an unlisted model ID is encountered

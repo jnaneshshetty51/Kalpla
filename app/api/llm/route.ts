@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/supabase/server";
 import { resolveModelConfig } from "@/lib/llm/models";
-import { executeLLMCall } from "@/lib/llm/providers";
-import { logLLMCost } from "@/lib/llm/logger";
-import { checkUsageCap, incrementUsage } from "@/lib/llm/usageCap";
+import { executeLLMCallWithCap, UsageCapExceededError } from "@/lib/llm/executeLLMCallWithCap";
 import { LLMProxyRequest, ModelTier } from "@/types/llm";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 
 export async function POST(request: Request) {
   try {
@@ -15,6 +14,10 @@ export async function POST(request: Request) {
         { error: "Unauthorized: Invalid or missing session" },
         { status: 401 },
       );
+    }
+
+    if (checkRateLimit(user.id, "llm_proxy", 20, 60_000)) {
+      return NextResponse.json(rateLimitedResponse(), { status: 429 });
     }
 
     // 2. Parse and validate payload
@@ -28,7 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { feature, model, messages, maxTokens, temperature, provider } = body;
+    const { feature, model, messages, maxTokens, temperature, provider, tools } = body;
 
     if (!feature || typeof feature !== "string") {
       return NextResponse.json(
@@ -67,51 +70,27 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Pre-call enforcement: Check subscription tier usage cap
-    const capResult = await checkUsageCap(user.id, feature);
-    if (!capResult.allowed) {
-      return NextResponse.json(
-        {
-          error: capResult.error,
-          feature: capResult.feature,
-          resetDate: capResult.resetDate,
-          limit: capResult.limit,
-          currentUsage: capResult.currentUsage,
-        },
-        { status: 429 },
-      );
-    }
-
-    // 4. Resolve model mapping (tier -> modelId)
+    // 3. Resolve model mapping (tier -> modelId)
     const resolvedConfig = resolveModelConfig(model as ModelTier, provider);
 
-    // 5. Dispatch to provider adapter
-    const result = await executeLLMCall({
+    // 4. Cap-checked call: enforce, dispatch, log cost, increment usage —
+    // the same pipeline every internal caller now goes through (Prompt 81).
+    const result = await executeLLMCallWithCap({
+      userId: user.id,
       provider: resolvedConfig.provider,
       modelId: resolvedConfig.modelId,
       feature,
       messages,
       maxTokens,
       temperature,
+      tools,
     });
 
-    // 6. Automatically log call to cost_logs ledger
-    const costUsd = await logLLMCost({
-      userId: user.id,
-      feature,
-      model: result.model,
-      tokensIn: result.usage.promptTokens,
-      tokensOut: result.usage.completionTokens,
-    });
-
-    result.usage.costUsd = costUsd;
-
-    // 7. Increment usage counters atomically post-successful call
-    await incrementUsage(user.id, feature);
-
-    // 8. Return standardized LLM response
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof UsageCapExceededError) {
+      return NextResponse.json(error.details, { status: 429 });
+    }
     console.error("Error in LLM proxy endpoint:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Internal Server Error";

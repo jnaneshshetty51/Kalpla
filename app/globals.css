@@ -4,48 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    --primary: 20 90% 55%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 20 90% 55%;
-
-    --radius: 0.5rem;
-
-    --font-sans: var(--font-geist-sans);
-    --font-mono: var(--font-geist-mono);
-  }
-
-  .dark {
-    --background: 222 47% 6%;
+    --background: 220 38% 6%;
     --foreground: 210 40% 98%;
 
     --card: 222 47% 9%;
@@ -54,13 +13,54 @@
     --popover: 222 47% 9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 20 90% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 185 100% 50%;
+    --primary-foreground: 222 47% 6%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 33% 17%;
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 185 100% 50%;
+
+    --radius: 0.5rem;
+
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+  }
+
+  .dark {
+    --background: 220 38% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 185 100% 50%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 14%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 217 33% 17%;
@@ -69,7 +69,7 @@
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
@@ -77,7 +77,7 @@
 
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 20 90% 55%;
+    --ring: 185 100% 50%;
   }
 }
 
@@ -87,6 +87,115 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-observatory-base text-steel-50 antialiased selection:bg-telemetry-cyan selection:text-observatory-base;
+    font-feature-settings: "tnum" 1, "cv05" 1;
   }
+}
+
+@layer utilities {
+  .font-tabular {
+    font-feature-settings: "tnum" 1, "zero" 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .telemetry-glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+  }
+
+  .telemetry-glow-emerald {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+  }
+
+  .telemetry-glow-amber {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+  }
+
+  .telemetry-grid-bg {
+    background-image: linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /*
+   * Small, hand-rolled set of entrance animations. This project doesn't
+   * have tailwindcss-animate installed, but several components already
+   * used its class-name API (animate-in, fade-in, slide-in-from-*) —
+   * those names silently apply to nothing (getComputedStyle confirmed
+   * animation-name: none on the actual DOM), so every "transition" that
+   * used them was a hard cut with no motion at all. These four cover the
+   * real, deliberate motion moments this app actually needs; there's
+   * intentionally no general-purpose animation utility grab-bag here.
+   */
+  .motion-fade-in {
+    animation: kalpla-fade-in 250ms ease-out both;
+  }
+
+  .motion-slide-fade-in {
+    animation: kalpla-slide-fade-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .motion-slide-down {
+    animation: kalpla-slide-down 200ms ease-out both;
+  }
+
+  .motion-pop-in {
+    animation: kalpla-pop-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+}
+
+@keyframes kalpla-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes kalpla-slide-fade-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes kalpla-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes kalpla-pop-in {
+  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/*
+ * Global prefers-reduced-motion handling — one rule that covers every
+ * animation and transition on the site, present and future, rather than a
+ * per-component motion-reduce: variant that's easy to forget on any new
+ * animated element. Durations collapse to effectively zero instead of
+ * display:none-ing the animation outright, so elements still reach their
+ * correct final state (a reduced-motion user still sees the revealed
+ * score, the unlocked node, etc. — just without the motion getting there).
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Global keyboard-focus fallback. Button/Input already ship their own
+ * focus:ring treatment plus focus:outline-none to suppress the browser
+ * default (Tailwind's outline-none utility is a real transparent outline,
+ * not `outline: none`, so `.focus\:outline-none:focus` still beats this
+ * rule on specificity — components keep their own ring, unchanged).
+ * Everywhere else on the platform — raw <a>/<button>/[tabindex] on
+ * marketing pages, admin tables, modals, custom interactive components —
+ * had no visible focus state at all. One rule fixes that everywhere at
+ * once instead of chasing it file by file.
+ */
+:focus-visible {
+  outline: 2px solid #00f0ff;
+  outline-offset: 2px;
+  border-radius: 2px;
 }

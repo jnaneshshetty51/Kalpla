@@ -1,0 +1,21 @@
+export const metadata = {
+  title: "Welcome to the Kalpla Blog",
+  description: "What this space is for, and what's coming here next.",
+  publishedDate: "2026-08-06",
+}
+
+# Welcome to the Kalpla blog
+
+This is the first post in this space — mostly here to prove the pipeline works end to end: this file
+lives in `content/blog/`, gets picked up by `generateStaticParams`, rendered through
+`app/(marketing)/blog/[slug]/page.tsx`, and shows up on the blog listing page with its own metadata
+for SEO.
+
+Real posts on GenAI engineering skills, how the assessment and roadmap are built, and what we're
+seeing from people going through the program will go here next.
+
+## Adding a new post
+
+Drop a new `.mdx` file into `content/blog/`, export a `metadata` object with a `title`, `description`,
+and `publishedDate`, and it shows up automatically — no route file to add, no listing entry to wire up
+by hand.

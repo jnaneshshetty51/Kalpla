@@ -8,7 +8,9 @@ export interface SkillNodeInput {
   order_index: number;
 }
 
-export type NodeStatus = "locked" | "available" | "in_progress" | "completed";
+export type SkillNode = SkillNodeInput;
+
+export type NodeStatus = "locked" | "available" | "in_progress" | "completed" | "skipped";
 
 export interface AnnotatedSkillNode extends SkillNodeInput {
   score: number;

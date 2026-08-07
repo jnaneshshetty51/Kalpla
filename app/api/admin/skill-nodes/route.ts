@@ -1,19 +1,8 @@
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { topologicalSort } from "@/lib/skillGraph/traverse";
 import { SkillNodeInput } from "@/types/skillGraph";
-
-/**
- * Helper to verify that the calling user is authenticated and possesses admin role privileges.
- */
-async function verifyAdminAuth() {
-  const { user, profile } = await getServerUser();
-  if (!user || profile?.role !== "admin") {
-    return null;
-  }
-  return { user, profile };
-}
+import { verifyAdminAuth } from "@/lib/admin/verifyAdminAuth";
 
 /**
  * GET /api/admin/skill-nodes
@@ -21,12 +10,7 @@ async function verifyAdminAuth() {
  */
 export async function GET() {
   const auth = await verifyAdminAuth();
-  if (!auth) {
-    return NextResponse.json(
-      { error: "Forbidden: Admin access required" },
-      { status: 403 },
-    );
-  }
+  if (!auth.authorized) return auth.response;
 
   try {
     const adminSupabase = createAdminClient();
@@ -55,12 +39,7 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   const auth = await verifyAdminAuth();
-  if (!auth) {
-    return NextResponse.json(
-      { error: "Forbidden: Admin access required" },
-      { status: 403 },
-    );
-  }
+  if (!auth.authorized) return auth.response;
 
   try {
     let body: Partial<SkillNodeInput>;
@@ -182,12 +161,7 @@ export async function POST(request: Request) {
  */
 export async function PATCH(request: Request) {
   const auth = await verifyAdminAuth();
-  if (!auth) {
-    return NextResponse.json(
-      { error: "Forbidden: Admin access required" },
-      { status: 403 },
-    );
-  }
+  if (!auth.authorized) return auth.response;
 
   try {
     let body: Partial<SkillNodeInput> & { id?: string };
@@ -310,12 +284,7 @@ export async function PATCH(request: Request) {
  */
 export async function DELETE(request: Request) {
   const auth = await verifyAdminAuth();
-  if (!auth) {
-    return NextResponse.json(
-      { error: "Forbidden: Admin access required" },
-      { status: 403 },
-    );
-  }
+  if (!auth.authorized) return auth.response;
 
   try {
     const { searchParams } = new URL(request.url);

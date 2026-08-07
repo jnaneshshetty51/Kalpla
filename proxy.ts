@@ -41,8 +41,50 @@ export async function proxy(request: NextRequest) {
     pathname === "/" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
+    // Forgot-password must be reachable by a logged-out (locked-out) visitor
+    // by definition. reset-password also has to be public here even though
+    // it's conceptually an authenticated page: Supabase's recovery links
+    // carry the session as a #access_token=... URL hash fragment (confirmed
+    // live), which browsers never send to the server — so proxy.ts (running
+    // server-side, before any client JS executes) can't see that session
+    // yet. The page itself establishes the recovery session client-side on
+    // mount and shows its own "invalid or expired link" state if none
+    // materializes, rather than relying on middleware-level auth gating.
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth") ||
-    pathname.startsWith("/api/health");
+    pathname.startsWith("/api/health") ||
+    // /portfolio/[username] is the public showcase page (Prompt 74) — note
+    // the trailing slash so bare /portfolio (the private editable draft)
+    // stays behind auth.
+    pathname.startsWith("/portfolio/") ||
+    // Vercel Cron has no user session; the daily-coach job authenticates
+    // itself via CRON_SECRET inside the route handler instead (Prompt 77).
+    pathname.startsWith("/api/cron/") ||
+    // Clicked straight from an email with no session — authenticated by a
+    // signed per-user token instead (Prompt 79).
+    pathname.startsWith("/api/email/unsubscribe") ||
+    // Stripe calls this with no user session; authenticated by webhook
+    // signature verification inside the route handler instead (Prompt 82).
+    pathname.startsWith("/api/billing/webhook") ||
+    // Marketing site (Section L / Prompt 85-90) — pre-signup visitors with
+    // no session by definition. Static/SEO-facing conventions (sitemap,
+    // robots) live at the true app root, not under /marketing, so they're
+    // listed individually rather than via the (marketing) route group.
+    pathname === "/how-it-works" ||
+    pathname === "/pricing" ||
+    pathname === "/faq" ||
+    pathname === "/about" ||
+    pathname === "/blog" ||
+    pathname.startsWith("/blog/") ||
+    // Legal pages (Terms, Privacy, Refund) — publicly readable by definition,
+    // including by prospective/unauthenticated visitors and unauthenticated
+    // Pilot Cohort applicants who haven't created an account yet.
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname === "/refund" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt";
 
   // `(app)` and `(admin)` are Next.js route groups: the parentheses mean
   // they're stripped from the URL entirely, so a page at

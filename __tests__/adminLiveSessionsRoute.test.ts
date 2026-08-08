@@ -146,7 +146,7 @@ describe("app/api/admin/live-sessions/route.ts", () => {
       expect(json.session.daily_room_name).toBe("room-abc");
 
       expect(mockCreateRoom).toHaveBeenCalledWith(
-        expect.objectContaining({ expiresAt: expect.any(Number), maxParticipants: 30 }),
+        expect.objectContaining({ expiresAt: expect.any(Number), maxParticipants: 20 }),
       );
       expect(mockInsert).toHaveBeenCalledWith(
         expect.objectContaining({

@@ -6,15 +6,21 @@ import { LiveSessionType } from "@/types/liveSession";
 
 const SESSION_TYPES: LiveSessionType[] = ["live_class", "architecture_session", "office_hours", "mock_interview"];
 
-// Explicit per-type participant cap — Daily defaults to 200 if unset, far
-// above any real cohort here. mock_interview is capped tight (exactly one
-// assigned student is ever authorized, + the admin, + a small margin for
-// an observing admin); cohort-wide types get a cap sized to the
-// documented ~10-20 student pilot cohort with headroom for admins/TAs.
+// Explicit per-type participant cap. Verified live against a real Daily
+// account (this project's default pay-as-you-go plan, not a paid tier):
+// values above 20 are hard-rejected ("cannot be set to that value with
+// your current plan") — Daily's docs advertise 200 as the room default,
+// but that ceiling doesn't apply to this account's actual plan. 20 is the
+// verified maximum this plan allows, which is also the top of the
+// documented ~10-20 student pilot cohort — tight if literally every
+// student plus the admin attends the same session at once, but that's a
+// "upgrade the Daily plan" conversation for later, not a v1 blocker.
+// mock_interview stays tight (exactly one assigned student is ever
+// authorized, + the admin, + a small margin for an observing admin).
 const MAX_PARTICIPANTS_BY_TYPE: Record<LiveSessionType, number> = {
-  live_class: 30,
-  architecture_session: 30,
-  office_hours: 30,
+  live_class: 20,
+  architecture_session: 20,
+  office_hours: 20,
   mock_interview: 4,
 };
 

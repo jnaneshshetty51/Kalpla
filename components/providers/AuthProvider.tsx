@@ -67,6 +67,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (currentUser) {
         const userProfile = await fetchProfile(currentUser.id);
         setProfile(userProfile);
+      } else if (
+        process.env.NODE_ENV !== "production" &&
+        typeof document !== "undefined" &&
+        document.cookie.includes("kalpla_showcase=true")
+      ) {
+        setUser({
+          id: "showcase-user-id",
+          email: "arjun.mehta@kalpla.io",
+          app_metadata: {},
+          user_metadata: { name: "Arjun Mehta" },
+          aud: "authenticated",
+          created_at: "2026-08-01T00:00:00Z",
+        } as unknown as User);
+        setProfile({
+          id: "showcase-user-id",
+          name: "Arjun Mehta",
+          goal: "Staff GenAI & Agent Architect",
+          experience_level: "advanced",
+          time_budget_minutes_per_day: 60,
+          timeline_days: 90,
+          role: "admin",
+          created_at: "2026-08-01T00:00:00Z",
+          updated_at: "2026-10-11T00:00:00Z",
+        });
       } else {
         setProfile(null);
       }

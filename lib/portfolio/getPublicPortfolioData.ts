@@ -15,6 +15,57 @@ export interface PublicPortfolioData {
  * Extracted out of the page component so it's directly unit-testable.
  */
 export async function getPublicPortfolioData(slug: string): Promise<PublicPortfolioData | null> {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    (slug === "demo" || slug === "arjun-mehta")
+  ) {
+    return {
+      name: "Arjun Mehta",
+      slug,
+      bio: "Staff AI Engineer specializing in multi-agent orchestration, speculative decoding, and production RAG systems.",
+      categories: [
+        {
+          category: "LLM Fundamentals",
+          average: 94,
+          nodes: [
+            { name: "Tokenization & Embeddings", score: 96 },
+            { name: "Attention Mechanisms", score: 92 },
+          ],
+        },
+        {
+          category: "RAG & Retrieval",
+          average: 89,
+          nodes: [
+            { name: "Hybrid Search & Re-ranking", score: 91 },
+            { name: "Chunking Strategies", score: 87 },
+          ],
+        },
+        {
+          category: "Agent Architectures",
+          average: 92,
+          nodes: [
+            { name: "Tool Use & Function Calling", score: 95 },
+            { name: "Memory & State Persistence", score: 89 },
+          ],
+        },
+      ],
+      publishedProjects: [
+        {
+          id: "proj-1",
+          name: "Autonomous Travel Research Agent",
+          case_study:
+            "Architected a dual-agent planner using LangGraph with vector-backed memory cache and self-correcting schema validation.",
+        },
+        {
+          id: "proj-2",
+          name: "Sub-Second Production RAG Pipeline",
+          case_study:
+            "Built a high-throughput hybrid retrieval engine combining BM25 lexical search with pgvector cosine similarity and Colbert re-ranking.",
+        },
+      ],
+    };
+  }
+
   const adminSupabase = createAdminClient();
 
   const { data: portfolio } = await adminSupabase

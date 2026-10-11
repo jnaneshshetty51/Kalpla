@@ -36,6 +36,15 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Local showcase preview mode: allow rendering protected pages for screenshots
+  if (
+    process.env.NODE_ENV !== "production" &&
+    (request.cookies.get("kalpla_showcase")?.value === "true" ||
+      request.headers.get("x-showcase-mode") === "true")
+  ) {
+    return NextResponse.next();
+  }
+
   // List of public routes accessible without authentication
   const isPublicRoute =
     pathname === "/" ||
